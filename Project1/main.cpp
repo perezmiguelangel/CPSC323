@@ -22,15 +22,12 @@ int main()
   string buffer;
   vector<string> code;
   code.resize(MAX_LINES);
-  string buf;
   
   if(myFile.is_open())
     {
       int j = 0;
-      bool backspace = false;
       while(getline(myFile, buffer))
 	{
-	  backspace = false;
 	  //Step 2: Remove excess space and comments
 	  for(int i = 0; i < buffer.size(); i++)
 	    {
@@ -65,15 +62,18 @@ int main()
       cout << "unable to open file!";
     }
 
-
-  //Vector of strings, code, has cleaned up code
+  //Getting rid of newline chars
   for(int i = 0; i < code.size(); i++)
     {
       if(code[i].compare("\n") == 0)
 	{
 	  code.erase(code.begin() + i);
+	  --i;
 	}
     }
+  //Code is sorted and stored in vector code
+  //Planning to use regex to identify tokens
+  
   for(string s : code)
     {
       cout << s;
