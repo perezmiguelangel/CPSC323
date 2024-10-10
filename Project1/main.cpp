@@ -23,6 +23,7 @@ int main()
   string buffer;
   vector<string> code;
   code.resize(MAX_LINES);
+ 
   
   if(myFile.is_open())
     {
@@ -89,29 +90,78 @@ int main()
 	  --i;
 	}
     }
-  //Code is sorted and stored in vector code
-  //Planning to use regex to identify tokens
-  //                             #include?
-  string keywords = "if|else|for|include|int|return|main|cout|endl|using|namespace";
-  regex reg_key(keywords);
-  int k = 1;
-
-  smatch match_result;
-  if(regex_search(code[k], match_result, reg_key))
-    {
-      cout << "Keyword found at line:" << k
-	   << "Match result = " << match_result[0];
-    }
-  else
-    {
-      cout << "Keyword NOT found!\n";
-    }
-
-  
+  //Printing nice code
   for(string s : code)
     {
       cout << s;
     }
+  
+  //Code is now sorted and stored in vector code
+  //Planning to use regex to identify tokens
+  //finalList[0] = keywords, 1 = identif, 2 = operators, 3 = delim
+  //          4 = literals
+  vector<string> finalList;
+  finalList.resize(MAX_LINES);
+  
+  string keywords = "if|else|for|int|return|main|cout|endl";
+  regex reg_key(keywords);
+
+  string identifiers = "[A-Za-z]*";
+  regex reg_id(identifiers);
+
+  string operators = "\\+|\\-|\\%|\\+\\+|\\-\\-|\\=\\=|\\=|\\*|>>|<<|!=";
+  regex reg_op(operators);
+
+  string delim = R"(\(|\)|;|,)";
+  regex reg_delim(delim);
+
+  string literals = R"("[A-Za-z0-9]*")";
+  regex reg_lit(literals);
+
+  for(int i = 0; i < code.size(); i++)
+    {
+      sregex_iterator last;
+      
+      sregex_iterator keywordIT(code[i].begin(), code[i].end(), reg_key);
+      sregex_iterator identifierIT(code[i].begin(), code[i].end(), reg_id);
+      sregex_iterator operatorIT(code[i].begin(), code[i].end(), reg_op);
+      sregex_iterator delimIT(code[i].begin(), code[i].end(), reg_delim);
+      sregex_iterator literalIT(code[i].begin(), code[i].end(), reg_lit);
+
+      while(keywordIT != last)
+	{
+	  finalList[0].append(keywordIT->str() + ", ");
+	  ++keywordIT;
+	}
+      while(identifierIT != last)
+        {
+          finalList[1].append(identifierIT->str() + ", ");   
+	  ++identifierIT;
+	}
+      while(operatorIT != last)
+	{
+	  finalList[2].append(operatorIT->str() + ", ");
+	  ++operatorIT;
+	}
+      while(delimIT != last)
+	{
+	  finalList[3].append(delimIT->str() + ", ");
+	  ++delimIT;
+	}
+      while(literalIT != last)
+	{
+	  finalList[4].append(literalIT->str() + ", ");
+	  ++literalIT;
+	}
+    }
+
+  cout << "~~KEYWORDS~~\n" << finalList[0];
+  cout << "\n~~IDENTIFIERS~~\n" << finalList[1];
+  cout << "\n~~OPERATORS~~\n" << finalList[2];
+  cout << "\n~~DELIMITERS~~\n" << finalList[3];
+  cout << "\n~~LITERALS~~\n" << finalList[4]
+       << endl;
+  
   
 
   return 0;
