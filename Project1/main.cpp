@@ -7,7 +7,6 @@
 //
 
 #include <iostream>
-//To read from file
 #include <fstream>
 #include <vector>
 #include <regex>
@@ -80,11 +79,20 @@ int main()
     {
       cout << "unable to open file!";
     }
-
+  string prep = "using|namespace|std";
+  regex preproc(prep);
+  smatch match;
+  bool myBool;
   //Getting rid of newline chars
   for(int i = 0; i < code.size(); i++)
     {
+      myBool = regex_search(code[i], match, preproc);
       if(code[i].compare("\n") == 0)
+	{
+	  code.erase(code.begin() + i);
+	  --i;
+	}
+      else if(myBool)
 	{
 	  code.erase(code.begin() + i);
 	  --i;
@@ -106,7 +114,7 @@ int main()
   string keywords = "if|else|for|int|return|main|cout|endl";
   regex reg_key(keywords);
 
-  string identifiers = "[A-Za-z]*";
+  string identifiers = "[A-Za-z0-9]*";
   regex reg_id(identifiers);
 
   string operators = "\\+|\\-|\\%|\\+\\+|\\-\\-|\\=\\=|\\=|\\*|>>|<<|!=";
@@ -135,7 +143,7 @@ int main()
 	}
       while(identifierIT != last)
         {
-          finalList[1].append(identifierIT->str() + ", ");   
+	  finalList[1].append(identifierIT->str() + ", ");   
 	  ++identifierIT;
 	}
       while(operatorIT != last)
