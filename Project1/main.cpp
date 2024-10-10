@@ -10,6 +10,7 @@
 //To read from file
 #include <fstream>
 #include <vector>
+#include <regex>
 
 #define MAX_LINES 30
 
@@ -26,8 +27,10 @@ int main()
   if(myFile.is_open())
     {
       int j = 0;
+      int wscount = 0;
       while(getline(myFile, buffer))
 	{
+	  wscount = 0;
 	  //Step 2: Remove excess space and comments
 	  for(int i = 0; i < buffer.size(); i++)
 	    {
@@ -38,15 +41,30 @@ int main()
 		  //line is comment
 		  break;
 		}
+	      else if(buffer[i] == '#')
+		{
+		  //Preprocessor, so ignore
+		  break;
+		}
 	      //If char is whitespace
 	      else if(isspace(buffer[i]))
 		{
-		  //ignore?
+		  if(wscount == 0)
+		    {
+		      code[j].push_back(buffer[i]);
+		      ++wscount;
+		    }
+		  else
+		    {
+		      //ignore
+		    }
 		}
 	      //Char is normal char, write to code
 	      else
 		{
 		  code[j].push_back(buffer[i]);
+		  if(wscount != 0)
+		    wscount = 0;
 		}
 	    }
 	  
@@ -73,6 +91,22 @@ int main()
     }
   //Code is sorted and stored in vector code
   //Planning to use regex to identify tokens
+  //                             #include?
+  string keywords = "if|else|for|include|int|return|main|cout|endl|using|namespace";
+  regex reg_key(keywords);
+  int k = 1;
+
+  smatch match_result;
+  if(regex_search(code[k], match_result, reg_key))
+    {
+      cout << "Keyword found at line:" << k
+	   << "Match result = " << match_result[0];
+    }
+  else
+    {
+      cout << "Keyword NOT found!\n";
+    }
+
   
   for(string s : code)
     {
