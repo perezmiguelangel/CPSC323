@@ -114,17 +114,20 @@ int main()
   string keywords = "if|else|for|int|return|main|cout|endl";
   regex reg_key(keywords);
 
-  string identifiers = "[A-Za-z0-9]*";
+  string identifiers = "[A-Za-z][A-Za-z0-9_]*";
   regex reg_id(identifiers);
 
   string operators = "\\+|\\-|\\%|\\+\\+|\\-\\-|\\=\\=|\\=|\\*|>>|<<|!=";
   regex reg_op(operators);
 
-  string delim = R"(\(|\)|;|,)";
+  string delim = R"(\(|\)|;|,|\{|\})";
   regex reg_delim(delim);
 
-  string literals = R"("[A-Za-z0-9]*")";
-  regex reg_lit(literals);
+  //Just for string literals
+  string sliterals = "[\"].*?[\"]";
+  regex reg_litS(sliterals);
+  string dliterals = "[!A-Za-z][0-9]*";
+  regex reg_litD(dliterals);
 
   for(int i = 0; i < code.size(); i++)
     {
@@ -134,7 +137,8 @@ int main()
       sregex_iterator identifierIT(code[i].begin(), code[i].end(), reg_id);
       sregex_iterator operatorIT(code[i].begin(), code[i].end(), reg_op);
       sregex_iterator delimIT(code[i].begin(), code[i].end(), reg_delim);
-      sregex_iterator literalIT(code[i].begin(), code[i].end(), reg_lit);
+      sregex_iterator literalIT(code[i].begin(), code[i].end(), reg_litS);
+      sregex_iterator literalDIT(code[i].begin(), code[i].end(), reg_litD);
 
       while(keywordIT != last)
 	{
@@ -143,8 +147,17 @@ int main()
 	}
       while(identifierIT != last)
         {
-	  finalList[1].append(identifierIT->str() + ", ");   
-	  ++identifierIT;
+          string s =  identifierIT->str(); 
+	  if(s != "if" && s != "else" && s != "for" && s!= "int" &&
+	     s != "return" && s != "main" && s != "cout" && s != "endl")
+	    {
+	     finalList[1].append(identifierIT->str() + ", ");   
+	     ++identifierIT;
+	    }
+	  else
+	    {
+	      ++identifierIT;
+	    }
 	}
       while(operatorIT != last)
 	{
@@ -160,6 +173,11 @@ int main()
 	{
 	  finalList[4].append(literalIT->str() + ", ");
 	  ++literalIT;
+	}
+      while(literalDIT != last)
+	{
+	  finalList[4].append(literalDIT->str() + ", ");
+	  ++literalDIT;
 	}
     }
 
