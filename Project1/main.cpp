@@ -17,7 +17,7 @@ using namespace std;
 
 int main()
 {
-  //Step 1: Read data from file
+  //STEP 1: Read data from file
   ifstream myFile ("code.txt");
   string buffer;
   vector<string> code;
@@ -31,7 +31,7 @@ int main()
       while(getline(myFile, buffer))
 	{
 	  wscount = 0;
-	  //Step 2: Remove excess space and comments
+	  //STEP 2: Remove excess space and comments
 	  for(int i = 0; i < buffer.size(); i++)
 	    {
 	      //If char == /, is comment, skip
@@ -67,23 +67,27 @@ int main()
 		    wscount = 0;
 		}
 	    }
-	  
+	  //Pushing newlines to keep clean
 	  code[j].push_back('\n');
 	  ++j;
 	   
-	  
         }
+      //Closing file once done reading
       myFile.close();
     }
   else
     {
       cout << "unable to open file!";
+      return 0;
     }
+
+  //Getting rid of preprocessor stuff
   string prep = "using|namespace|std";
   regex preproc(prep);
   smatch match;
   bool myBool;
-  //Getting rid of newline chars
+  
+  //Getting rid of excess newline chars
   for(int i = 0; i < code.size(); i++)
     {
       myBool = regex_search(code[i], match, preproc);
@@ -98,23 +102,26 @@ int main()
 	  --i;
 	}
     }
+  
+  cout << "\n~~~CLEANED UP CODE~~~\n";
   //Printing nice code
   for(string s : code)
     {
       cout << s;
     }
+  cout << "\n";
   
-  //Code is now sorted and stored in vector code
-  //Planning to use regex to identify tokens
-  //finalList[0] = keywords, 1 = identif, 2 = operators, 3 = delim
-  //          4 = literals
+  //STEP 3: Code is now sorted and stored in vector<string> code
+  //  Using regex to identify tokens
+  //  finalList[0] = keywords, 1 = identif, 2 = operators, 3 = delim
+  //            4 = literals
   vector<string> finalList;
   finalList.resize(MAX_LINES);
   
   string keywords = "if|else|for|int|return|main|cout|endl";
   regex reg_key(keywords);
 
-  string identifiers = "[A-Za-z][A-Za-z0-9_]*";
+  string identifiers = "([\"]|[A-Za-z])[A-Za-z0-9_]*";
   regex reg_id(identifiers);
 
   string operators = "\\+|\\-|\\%|\\+\\+|\\-\\-|\\=\\=|\\=|\\*|>>|<<|!=";
@@ -123,16 +130,21 @@ int main()
   string delim = R"(\(|\)|;|,|\{|\})";
   regex reg_delim(delim);
 
-  //Just for string literals
+  //Just for string literals & int literals
   string sliterals = "[\"].*?[\"]";
   regex reg_litS(sliterals);
-  string dliterals = "[!A-Za-z][0-9]*";
+  string dliterals = "[\\s][0-9]+";
   regex reg_litD(dliterals);
 
+  //Using this to handle edge case in identifiers
+  regex quoted("[\"].*");
+  
   for(int i = 0; i < code.size(); i++)
     {
+      //Automatically constructs as last if left without params
       sregex_iterator last;
-      
+
+      //Iterators for every kind of token
       sregex_iterator keywordIT(code[i].begin(), code[i].end(), reg_key);
       sregex_iterator identifierIT(code[i].begin(), code[i].end(), reg_id);
       sregex_iterator operatorIT(code[i].begin(), code[i].end(), reg_op);
@@ -140,6 +152,8 @@ int main()
       sregex_iterator literalIT(code[i].begin(), code[i].end(), reg_litS);
       sregex_iterator literalDIT(code[i].begin(), code[i].end(), reg_litD);
 
+      //All these while loops check for their respective token, once
+      // found, they add them to their respective string in vector
       while(keywordIT != last)
 	{
 	  finalList[0].append(keywordIT->str() + ", ");
@@ -149,10 +163,12 @@ int main()
         {
           string s =  identifierIT->str(); 
 	  if(s != "if" && s != "else" && s != "for" && s!= "int" &&
-	     s != "return" && s != "main" && s != "cout" && s != "endl")
+	     s != "return" && s != "main" && s != "cout" && s != "endl" &&
+	     s != "\"")
 	    {
-	     finalList[1].append(identifierIT->str() + ", ");   
-	     ++identifierIT;
+	      if(!(regex_match(s, quoted)))
+		 finalList[1].append(identifierIT->str() + ", ");   
+		 ++identifierIT;
 	    }
 	  else
 	    {
@@ -181,12 +197,14 @@ int main()
 	}
     }
 
-  cout << "~~KEYWORDS~~\n" << finalList[0];
-  cout << "\n~~IDENTIFIERS~~\n" << finalList[1];
-  cout << "\n~~OPERATORS~~\n" << finalList[2];
-  cout << "\n~~DELIMITERS~~\n" << finalList[3];
-  cout << "\n~~LITERALS~~\n" << finalList[4]
-       << endl;
+  //FINAL STEP: Printing results
+  cout << "\n~~~CATEGORY~~~~~\tTOKENS\n"
+       << "\n~~~KEYWORDS~~~~~\t" << finalList[0]
+       << "\n~~~IDENTIFIERS~~\t" << finalList[1]
+       << "\n~~~OPERATORS~~~~\t" << finalList[2]
+       << "\n~~~DELIMITERS~~~\t" << finalList[3]
+       << "\n~~~LITERALS~~~~~\t" << finalList[4]
+       << "\n\n";
   
   
 

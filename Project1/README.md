@@ -1,3 +1,5 @@
 README.md
 
-Miguel Perez
+PROJECT 1: Data Processing Project
+
+Author: Miguel Perez
